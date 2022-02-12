@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { User, Comment } = require('../../models');
+const { User, Post, Comment } = require('../../models');
 
 // get all users GET /api/users
 router.get('/', (req, res) => {
@@ -23,7 +23,7 @@ router.get('/:id', (req, res) => {
     include: [
       {
         model: Post,
-        attributes: ['id', 'title', 'post_url', 'created_at']
+        attributes: ['id', 'title', 'post_body', 'created_at']
       },
       {
         model: Comment,
@@ -68,11 +68,11 @@ router.post('/', (req, res) => {
 router.post('./login', (req, res) => {
     User.findOne({
         where: {
-          email: req.body.email
+          username: req.body.username
         }
       }).then(dbUserData => {
         if (!dbUserData) {
-          res.status(400).json({ message: 'No user with that email address!' });
+          res.status(400).json({ message: 'No user with that username!' });
           return;
         }
     
@@ -93,7 +93,17 @@ router.post('./login', (req, res) => {
       });
     });
 
-// add router.post for logout route
+//logout route
+router.post('/logout', (req, res) => {
+  if (req.session.loggedIn) {
+    req.session.destroy(() => {
+      res.status(204).end();
+    });
+  }
+  else {
+    res.status(404).end();
+  }
+});
 
 // PUT api/users/[user id]
 router.put('/:id', (req, res) => {
